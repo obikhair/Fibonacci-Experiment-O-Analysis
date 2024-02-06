@@ -8,6 +8,7 @@ public class LinearFib extends Fib{
         int c;
         for (int i = 0; i < n; i++){
             c = a + b;
+            a = b;
             b = c;
         }
         return a;
