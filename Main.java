@@ -63,12 +63,12 @@ public class Main {
     return totalTime/ncalls; // fix this
   }
 
-  /** Determine the time in microseconds it takes to to calculate the
+  /** Determine the time in microseconds it takes to calculate the
       n'th Fibonacci number.  Average over enough calls for a total
       time of at least one second.
       @param fib an object that implements the Fib interface
       @param n the index of the Fibonacci number to calculate
-      @return the time it it takes to compute the n'th Fibonacci number
+      @return the time it takes to compute the n'th Fibonacci number
   */
   public static double accurateTime (Fib fib, int n) {
     // Get the time in microseconds for one call.
@@ -89,10 +89,10 @@ public class Main {
   }
 
 
-  //private static UserInterface ui = new TestUI("Fibonacci experiments");
-  private static UserInterface ui = new GUI("Fibonacci experiments");
+  private static UserInterface ui = new TestUI("Fibonacci experiments");
+  //private static UserInterface ui = new GUI("Fibonacci experiments");
 
-  /** Get a non-negative integer from the using using ui.
+  /** Get a non-negative integer from the using ui.
       If the user enters a negative integer, like -2, say
       "-2 is negative...invalid" and ask again.
       If the user enters a non-integer, like abc, say
@@ -101,27 +101,94 @@ public class Main {
       @return the non-negative integer entered by the user or -1 for cancel.
   */
   static int getInteger () {
+    while (true){
     String s = ui.getInfo("Enter n");
     if (s == null)
       return -1;
-    return Integer.parseInt(s);
+
+    try{
+      int n = Integer.parseInt(s);
+      if (n >= 0)
+        return n;
+      ui.sendMessage(n + " is negative...invalid");
+    }
+    catch (Exception e){
+      ui.sendMessage(s + " is not an integer. Try again.");
+    }
+    }
   }
 
   public static void doExperiments (Fib fib) {
     System.out.println("doExperiments " + fib);
 
+    int n = getInteger();
+    double timeEst = 0;
+    boolean firstLoop = true;
+
+    while (n != -1){
+      if (!firstLoop){
+        timeEst =  fib.estimateTime(n);
+        ui.sendMessage("Estimated time on input "+ n +" is " + timeEst + " microseconds. ");
+        if (timeEst > 3.6E+9){
+          ui.sendMessage("Estimated time is more than an hour.\n" +
+                  "I will ask you if you really want to run it.");
+          String[] yesNoCommands = {"yes", "no"};
+          int c = ui.getCommand(yesNoCommands);
+          if (c == 1) {
+            n = getInteger();
+            continue;
+          }
+        }
+      }
+      double actualTime = accurateTime(fib, n);
+      fib.recordConstant(n, actualTime);
+      if (timeEst > 0){
+        double percentError = ((timeEst - actualTime)/actualTime) * 100;
+        ui.sendMessage("fib(" + n + ") = " + fibn + " in " + actualTime + " microseconds. " + percentError + "% error.");
+      }
+      else {
+        ui.sendMessage("fib(" + n + ") = " + fibn + " in " + actualTime + " microseconds. ");
+      }
+      firstLoop = false;
+      n = getInteger();
+    }
+
   }
 
   public static void doExperiments () {
     // Give the user a choice instead, in a loop, with the option to exit.
-    doExperiments(new ExponentialFib());
+    String[] commands = {"ExponentialFib", "LinearFib", "LogFib", "ConstantFib", "MysteryFib", "EXIT"};
+
+    while(true){
+      int c = ui.getCommand(commands);
+      switch(c){
+        case -1:
+        case 5:
+          return;
+        case 0:
+          doExperiments(new ExponentialFib());
+          break;
+        case 1:
+          doExperiments(new LinearFib());
+          break;
+        case 2:
+          doExperiments(new LogFib());
+          break;
+        case 3:
+          doExperiments(new ConstantFib());
+          break;
+        case 4:
+          doExperiments(new MysteryFib());
+          break;
+      }
+    }
   }
 
   static void labExperiments () {
     // Create (Exponential time) Fib object and test it.
-//    Fib efib = new ExponentialFib();
-//    Fib efib = new LinearFib();
-//    Fib efib = new LogFib();
+    //Fib efib = new ExponentialFib();
+    //Fib efib = new LinearFib();
+    //Fib efib = new LogFib();
     Fib efib = new ConstantFib();
 
     System.out.println(efib);
@@ -156,7 +223,7 @@ public class Main {
    * @param args the command line arguments
    */
   public static void main (String[] args) {
-    labExperiments();
+    //labExperiments();
     doExperiments();
   }
 }
