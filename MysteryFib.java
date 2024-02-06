@@ -32,6 +32,6 @@ public class MysteryFib extends ExponentialFib {
 	@return the function of n inside the O()
     */
     public double O (int n) {
-      return 1; // Is this right?
+      return n; // Is this right?
     }
 }
